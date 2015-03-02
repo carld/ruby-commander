@@ -1,0 +1,70 @@
+#!/bin/bash
+
+completion_src=~/.ruby-commander-completion
+
+upstream_ruby_index=http://cache.ruby-lang.org/pub/ruby/
+upstream_version_match='s/.*ruby-\(.*\)\.tar\.gz.*/\1/p'
+upstream_ruby_versions=/tmp/available-ruby-versions
+
+local_ruby_index=/opt
+local_version_match='s/.*ruby-\(.*\).*/\1/p'
+local_ruby_versions=/tmp/local-ruby-versions
+
+echo -n "Updating indexes... "
+wget --quiet -O - $upstream_ruby_index  | sed -n $upstream_version_match > $upstream_ruby_versions
+ls $local_ruby_index | sed -n $local_version_match > $local_ruby_versions
+echo "Done"
+
+cat << "EOF" > $completion_src
+upstream_ruby_versions=/tmp/available-ruby-versions
+local_ruby_versions=/tmp/local-ruby-versions
+
+_ruby_commander_completion()
+{
+  local cur=${COMP_WORDS[COMP_CWORD]}
+  local prev=${COMP_WORDS[COMP_CWORD-1]}
+  #echo -n "$COMP_CWORD "
+  COMPREPLY=()
+  case "$prev" in
+    install)
+      words=$(cat $upstream_ruby_versions | paste -s -)
+      COMPREPLY=( $( compgen -W '$words' -- $cur ) )
+    ;;
+    use|uninstall)
+      words=$(cat $local_ruby_versions | paste -s -)
+      COMPREPLY=( $( compgen -W '$words' -- $cur ) )
+    ;;
+    *)
+      COMPREPLY=()
+      ;;
+  esac
+  if [ $COMP_CWORD -eq 1 ]; then
+    COMPREPLY=( $( compgen -W 'install uninstall use' -- $cur ) )
+  fi
+  return 0
+}
+EOF
+
+source $completion_src && complete -F _ruby_commander_completion $(basename $0)
+
+#if [ $# -eq 0 ] ; then
+  #echo "To install:          sudo install $(basename $0) /usr/local/bin"
+  #echo "For tab completion:  source $completion_src && complete -F _ruby_commander_completion $(basename $0)"
+#fi
+
+case $1 in
+  install)
+    tarball=ruby-$2.tar.gz
+    wget -O /tmp/$tarball $upstream_ruby_index/$tarball
+  ;;
+  uninstall)
+    directory=$local_ruby_index/ruby-$2
+    rm -r $directory
+  ;;
+  use)
+    echo $PATH
+    echo $PATH | sed -n 's|\(/opt/ruby-.*/bin\)|\1|p'
+  ;;
+  *)
+  ;;
+esac 
