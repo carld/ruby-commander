@@ -4,11 +4,11 @@ dst=~/.ruby-commander
 
 echo "Ruby Commander"
 echo "To setup:"
-echo "  $0 bootstrap # cp -va $(basename $0) $dst "
+echo "  $0 bootstrap # cp -va $0 $dst "
 echo "  source $dst  # add this line to ~/.bash_profile "
 
 if [ "$1" = "bootstrap" ]; then
-  cp -va $(basename $0) $dst
+  cp -va $0 $dst
   exit  
 fi
 
