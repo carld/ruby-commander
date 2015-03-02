@@ -59,12 +59,10 @@ case $1 in
   ;;
   use)
     directory=$local_ruby_index/ruby-$2
-    NEW_PATH=$(echo $PATH | sed -n 's|\(/opt/ruby-[^/]*/bin\)||gp')
-    echo $NEW_PATH
+    NEW_PATH=$(echo $PATH | sed -n 's|\(/opt/ruby-[^/]*/bin:*\)||gp')
     NEW_PATH=$NEW_PATH:$directory/bin
-    echo $NEW_PATH
-    #export PATH=$NEW_PATH
-    #echo $PATH
+    export PATH=$NEW_PATH
+    gem env
   ;;
   update|*)
     _ruby_commander_update_indexes
