@@ -15,10 +15,16 @@ local_ruby_versions=/tmp/local-ruby-versions
 
 _ruby_commander_update_indexes()
 {
-echo -n "Updating indexes... "
-wget --progress=dot --quiet -O - $upstream_ruby_index  | sed -n $upstream_version_match > $upstream_ruby_versions
+echo "Updating indexes... "
+wget --quiet -O - $upstream_ruby_index  | sed -n $upstream_version_match > $upstream_ruby_versions
+if [ $? -ne 0 ]; then
+  echo "  Error updating upstream index."
+else
+  echo "  $(wc -l $upstream_ruby_versions) upstream versions."
+fi
 ls $local_ruby_index | sed -n $local_version_match > $local_ruby_versions
-echo "Done"
+echo "  $(wc -l $local_ruby_versions) local versions."
+return 0
 }
 
 _ruby_commander_completion()
@@ -51,7 +57,15 @@ function ruby-commander()
 case $1 in
   install)
     tarball=ruby-$2.tar.gz
-    wget -O /tmp/$tarball $upstream_ruby_index/$tarball
+    cd /tmp
+    curl $upstream_ruby_index$tarball
+    tar zxvf $tarball
+    cd --
+    cd /tmp/ruby-$2
+    ./configure --prefix=/$local_ruby_index/ruby-$2
+    make
+    sudo make install
+    cd --
   ;;
   uninstall)
     directory=$local_ruby_index/ruby-$2
