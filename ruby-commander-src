@@ -1,7 +1,14 @@
 #!/bin/bash
 
+dst=~/.ruby-commander
+
+echo "Ruby Commander"
+echo "To setup:"
+echo "  $0 bootstrap # cp -va $(basename $0) $dst "
+echo "  source $dst  # add this line to ~/.bash_profile "
+
 if [ "$1" = "bootstrap" ]; then
-  cp -va $(basename $0) ~/.ruby-commander
+  cp -va $(basename $0) $dst
   exit  
 fi
 
@@ -56,16 +63,20 @@ function ruby-commander()
 {
 case $1 in
   install)
+    /bin/bash <<-EOF
+    cur_dir=$(pwd)
     tarball=ruby-$2.tar.gz
     cd /tmp
-    curl $upstream_ruby_index$tarball
-    tar zxvf $tarball
+    #curl $upstream_ruby_index$tarball
+    #gunzip $tarball | tar xvf
     cd --
     cd /tmp/ruby-$2
-    ./configure --prefix=/$local_ruby_index/ruby-$2
+    ./configure --prefix=$local_ruby_index/ruby-$2
     make
     sudo make install
     cd --
+    cd $cur_dir
+EOF
   ;;
   uninstall)
     directory=$local_ruby_index/ruby-$2
