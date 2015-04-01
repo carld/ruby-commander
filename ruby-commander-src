@@ -1,16 +1,12 @@
 #!/bin/bash
 
+VERSION=0.0.1
 dst=~/.ruby-commander
 
-echo "Ruby Commander"
-echo "To setup:"
-echo "  $0 bootstrap # cp -va $0 $dst "
-echo "  source $dst  # add this line to ~/.bash_profile "
+echo "Ruby Commander $VERSION"
+echo "source $dst  # add this line to ~/.bash_profile "
 
-if [ "$1" = "bootstrap" ]; then
-  cp -va $0 $dst
-  exit  
-fi
+tmp_dir=/tmp
 
 upstream_ruby_index=http://cache.ruby-lang.org/pub/ruby/
 upstream_version_match='s/.*ruby-\(.*\)\.tar\.gz.*/\1/p'
@@ -54,7 +50,7 @@ _ruby_commander_completion()
       ;;
   esac
   if [ $COMP_CWORD -eq 1 ]; then
-    COMPREPLY=( $( compgen -W 'install uninstall use update' -- $cur ) )
+    COMPREPLY=( $( compgen -W 'install uninstall use update help environment' -- $cur ) )
   fi
   return 0
 }
@@ -63,31 +59,66 @@ function ruby-commander()
 {
 case $1 in
   install)
-    /bin/bash <<-EOF
+    set -o verbose
     cur_dir=$(pwd)
     tarball=ruby-$2.tar.gz
-    cd /tmp
-    #curl $upstream_ruby_index$tarball
-    #gunzip $tarball | tar xvf
-    cd --
-    cd /tmp/ruby-$2
+    cd $tmp_dir
+    curl -v -o $tarball $upstream_ruby_index$tarball
+    tar zxvf $tarball
+    cd $tmp_dir/ruby-$2
     ./configure --prefix=$local_ruby_index/ruby-$2
     make
     sudo make install
-    cd --
     cd $cur_dir
-EOF
+    set +o verbose
+    _ruby_commander_update_indexes
   ;;
   uninstall)
+    set -o verbose
     directory=$local_ruby_index/ruby-$2
-    rm -r $directory
+    rm -rv $directory
+    set +o verbose
   ;;
   use)
+    set -o verbose
     directory=$local_ruby_index/ruby-$2
     NEW_PATH=$(echo $PATH | sed -n 's|\(/opt/ruby-[^/]*/bin:*\)||gp')
     NEW_PATH=$NEW_PATH:$directory/bin
     export PATH=$NEW_PATH
+    echo $PATH
+    which -a ruby
     gem env
+    set +o verbose
+  ;;
+  help)
+cat <<-EOF
+$VERSION
+ruby-commander [action] [version]
+
+  use [version]           Modify PATH to contain the path to the version
+                          of ruby installed at $local_ruby_index/[version]
+  install [version]       Install [version] of ruby by downloading from 
+                          ruby-lang.org and compiling and installing 
+                          to $local_ruby_index/[version]
+  uninstall [version]     Remove [version] of ruby from $local_ruby_index/[version]
+  update                  Update the local cache of both remote versions
+                          of ruby available from ruby-lang.org and
+                          local versions of ruby available from $local_ruby_index 
+  environment             Show the directories and files used
+  help                    This help
+
+Bash tab completion is enabled to assist with discovering [action]
+and [version].
+EOF
+  ;;
+  env*)
+cat <<-EOF
+  Remote ruby location:                        $upstream_ruby_index
+  List of remotely available ruby versions:    $upstream_ruby_versions
+  Local installation directory:                $local_ruby_index
+  List of locally available ruby versions:     $local_ruby_versions
+  Compilation directory:                       $tmp_dir
+EOF
   ;;
   update|*)
     _ruby_commander_update_indexes
