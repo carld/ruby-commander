@@ -82,7 +82,7 @@ case $1 in
   use)
     set -o verbose
     directory=$local_ruby_index/ruby-$2
-    NEW_PATH=$(echo $PATH | sed -n 's|\(/opt/ruby-[^/]*/bin:*\)||gp')
+    NEW_PATH=$(echo $PATH | sed -r -e 's|(/opt/ruby-[0-9a-Z\.\-]+/bin:?)||g')
     NEW_PATH=$NEW_PATH:$directory/bin
     export PATH=$NEW_PATH
     echo $PATH
