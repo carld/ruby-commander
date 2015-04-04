@@ -1,5 +1,5 @@
 
-install -v -T ./ruby-commander-src ~/.ruby-commander
+cp -v -a ./ruby-commander-src ~/.ruby-commander
 
 grep  "source ~/.ruby-commander" ~/.bash_profile
 
