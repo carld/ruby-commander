@@ -20,7 +20,7 @@ _ruby_commander_update_indexes()
 {
 echo "Updating indexes... "
 curl -v -o $upstream_ruby_versions $upstream_ruby_index
-sed -n -e $upstream_version_match -i _sed $upstream_ruby_versions
+sed -n -e $upstream_version_match -i $upstream_ruby_versions
 if [ $? -ne 0 ]; then
   echo "  Error updating upstream index."
 else
