@@ -119,6 +119,9 @@ cat <<-EOF
   Local installation directory:                $local_ruby_index
   List of locally available ruby versions:     $local_ruby_versions
   Compilation directory:                       $tmp_dir
+
+  http_proxy:                                  $http_proxy
+  https_proxy:                                 $https_proxy
 EOF
   ;;
   update|*)
