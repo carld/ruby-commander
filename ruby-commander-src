@@ -21,12 +21,14 @@ _ruby_commander_update_indexes()
 echo "Updating indexes... "
 curl -v -o $upstream_ruby_versions $upstream_ruby_index
 sed -n -e $upstream_version_match -i $upstream_ruby_versions
+chmod a+rw $upstream_ruby_versions
 if [ $? -ne 0 ]; then
   echo "  Error updating upstream index."
 else
   echo "  $(wc -l $upstream_ruby_versions) upstream versions."
 fi
 ls $local_ruby_index | sed -n $local_version_match > $local_ruby_versions
+chmod a+rw $local_ruby_versions
 echo "  $(wc -l $local_ruby_versions) local versions."
 return 0
 }
